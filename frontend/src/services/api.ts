@@ -6,6 +6,9 @@ import type {
   UsageRecord,
   Expense,
   MonthlyReport,
+  Role,
+  User,
+  UserUpdateData,
 } from "../types";
 
 const API_BASE_URL = "http://localhost:8080/api";
@@ -67,7 +70,7 @@ interface RegisterData {
   password: string;
   confirmPassword: string;
   fullName: string;
-  role: "STAFF" | "MANAGER";
+  role: Role;
 }
 
 // Auth API
@@ -136,4 +139,14 @@ export const expenseAPI = {
 export const reportAPI = {
   getMonthly: (month: string) =>
     api.get<MonthlyReport>(`/reports/monthly?month=${month}`),
+};
+
+// User API
+export const userAPI = {
+  getAll: () => api.get<User[]>("/users"),
+  update: (id: number, data: UserUpdateData) =>
+    api.put<User>(`/users/${id}`, data),
+  updatePassword: (id: number, data: { password: string }) =>
+    api.put<void>(`/users/${id}/password`, data),
+  delete: (id: number) => api.delete<void>(`/users/${id}`),
 };

@@ -7,6 +7,19 @@ export interface UserInfo {
   role: Role;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  fullName: string;
+  role: Role;
+}
+
+export interface UserUpdateData {
+  username?: string;
+  fullName?: string;
+  role?: Role;
+}
+
 export interface StockItem {
   id?: number;
   name: string;
@@ -60,4 +73,3 @@ export interface MonthlyReport {
   lowStock: number;
   usageCount: number;
 }
-
