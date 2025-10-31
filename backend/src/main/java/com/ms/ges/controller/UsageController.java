@@ -85,6 +85,8 @@ public class UsageController {
             if (authentication != null && authentication.getPrincipal() instanceof com.ms.ges.model.User) {
                 usage.setUser((com.ms.ges.model.User) authentication.getPrincipal());
             }
+            // If user is not available from authentication, we'll save the usage without user info
+            // This prevents the save operation from failing
 
             // Update stock quantity
             stockItem.setQuantity(stockItem.getQuantity() - usage.getQuantityUsed());
@@ -94,6 +96,7 @@ public class UsageController {
             return ResponseEntity.ok(savedUsage);
             
         } catch (Exception e) {
+            e.printStackTrace(); // Log the actual error for debugging
             return ResponseEntity.badRequest()
                 .body(Map.of("message", "Failed to create usage record: " + e.getMessage()));
         }

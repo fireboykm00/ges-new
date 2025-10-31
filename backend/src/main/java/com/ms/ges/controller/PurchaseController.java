@@ -69,6 +69,7 @@ public class PurchaseController {
                     .body(Map.of("message", "At least one item is required"));
             }
 
+            // Process items and calculate total without duplicating them
             for (PurchaseItem item : purchase.getItems()) {
                 // Validate stock item exists
                 Long stockItemId = item.getStockItemId();
@@ -93,17 +94,21 @@ public class PurchaseController {
                 }
 
                 totalAmount += item.getQuantity() * item.getPrice();
-                purchase.addItem(item);
 
                 // Update stock quantity
                 StockItem stockItem = stockItemOpt.get();
                 stockItem.setQuantity(stockItem.getQuantity() + item.getQuantity());
                 stockRepository.save(stockItem);
+                
+                // Set the purchase reference to maintain bidirectional relationship
+                item.setPurchase(purchase);
             }
+            
             purchase.setTotalAmount(totalAmount);
             Purchase savedPurchase = purchaseRepository.save(purchase);
             return ResponseEntity.ok(savedPurchase);
         } catch (Exception e) {
+            e.printStackTrace(); // Log the actual error for debugging
             return ResponseEntity.badRequest()
                 .body(Map.of("message", "Failed to create purchase: " + e.getMessage()));
         }
