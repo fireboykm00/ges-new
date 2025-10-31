@@ -49,7 +49,7 @@ export default function UsagePage() {
       const response = await usageAPI.getAll();
       setUsages(response.data);
     } catch (error) {
-      toast.error("Failed to fetch usage records");
+      handleAPIError(error, "Failed to fetch usage records");
       console.error("Error fetching usages:", error);
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function UsagePage() {
       const response = await stockAPI.getAll();
       setStockItems(response.data);
     } catch (error) {
-      toast.error("Failed to fetch stock items");
+      handleAPIError(error, "Failed to fetch stock items");
       console.error("Error fetching stock items:", error);
     }
   };
@@ -131,7 +131,10 @@ export default function UsagePage() {
       fetchUsages();
       fetchStockItems(); // Refresh stock items to show updated quantities
     } catch (error) {
-      handleAPIError(error, `Failed to ${editingId ? "update" : "record"} usage`);
+      handleAPIError(
+        error,
+        `Failed to ${editingId ? "update" : "record"} usage`
+      );
       console.error("Error handling usage:", error);
     }
   };
