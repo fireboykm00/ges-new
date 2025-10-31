@@ -15,6 +15,7 @@ import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { handleAPIError } from "../lib/api-error";
 import { z } from "zod";
 import type { StockItem } from "../types";
+import { Lock } from "lucide-react";
 
 const stockItemSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),
@@ -40,6 +41,9 @@ export default function Stocks() {
     unitPrice: 0,
     reorderLevel: 0,
   });
+
+  // Get user role from localStorage
+  const userRole = localStorage.getItem("role");
 
   useEffect(() => {
     fetchStocks();
@@ -139,7 +143,7 @@ export default function Stocks() {
         toast.success("Stock deleted successfully");
         fetchStocks();
       } catch (error) {
-        toast.error("Failed to delete stock");
+        handleAPIError(error, "Failed to delete stock");
         console.error("Error deleting stock:", error);
       }
     }
@@ -375,13 +379,19 @@ export default function Stocks() {
                       >
                         Edit
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => stock.id && handleDelete(stock.id)}
-                      >
-                        Delete
-                      </Button>
+                      {userRole === "ADMIN" ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => stock.id && handleDelete(stock.id)}
+                        >
+                          Delete
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm" disabled>
+                          <Lock className="h-4 w-4" /> Delete
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

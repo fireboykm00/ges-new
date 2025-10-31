@@ -24,9 +24,8 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { toast } from "sonner";
+import { handleAPIError } from "../lib/api-error";
 import type { Supplier, StockItem, PurchaseItem, Purchase } from "../types";
-
-// Removed unused Purchase interface (inferred at usage time)
 
 export default function Purchases() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -220,7 +219,7 @@ export default function Purchases() {
         fetchPurchases();
         fetchStockItems(); // Refresh stock items to show updated quantities
       } catch (error) {
-        toast.error("Failed to delete purchase");
+        handleAPIError(error, "Failed to delete purchase");
         console.error("Error deleting purchase:", error);
       }
     }

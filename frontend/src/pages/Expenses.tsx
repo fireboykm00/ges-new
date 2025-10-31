@@ -18,6 +18,7 @@ import {
 } from "../components/ui/card";
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
+import { handleAPIError } from "../lib/api-error";
 import type { Expense } from "../types";
 
 export default function Expenses() {
@@ -31,6 +32,9 @@ export default function Expenses() {
     date: new Date().toISOString().split("T")[0],
     description: "",
   });
+
+  // Get user role from localStorage
+  const userRole = localStorage.getItem("role");
 
   useEffect(() => {
     fetchExpenses();
@@ -135,7 +139,7 @@ export default function Expenses() {
         toast.success("Expense deleted successfully");
         fetchExpenses();
       } catch (error) {
-        toast.error("Failed to delete expense");
+        handleAPIError(error, "Failed to delete expense");
         console.error("Error deleting expense:", error);
       }
     }
@@ -282,13 +286,15 @@ export default function Expenses() {
                       >
                         Edit
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => expense.id && handleDelete(expense.id)}
-                      >
-                        Delete
-                      </Button>
+                      {(userRole === "ADMIN" || userRole === "MANAGER") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => expense.id && handleDelete(expense.id)}
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

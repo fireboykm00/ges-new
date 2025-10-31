@@ -17,7 +17,9 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { toast } from "sonner";
+import { handleAPIError } from "../lib/api-error";
 import type { Supplier } from "../types";
+import { Lock } from "lucide-react";
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -29,6 +31,9 @@ export default function Suppliers() {
     phone: "",
     email: "",
   });
+
+  // Get user role from localStorage
+  const userRole = localStorage.getItem("role");
 
   useEffect(() => {
     fetchSuppliers();
@@ -91,7 +96,7 @@ export default function Suppliers() {
         toast.success("Supplier deleted successfully");
         fetchSuppliers();
       } catch (error) {
-        toast.error("Failed to delete supplier");
+        handleAPIError(error, "Failed to delete supplier");
         console.error("Error deleting supplier:", error);
       }
     }
@@ -212,13 +217,21 @@ export default function Suppliers() {
                       >
                         Edit
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => supplier.id && handleDelete(supplier.id)}
-                      >
-                        Delete
-                      </Button>
+                      {userRole === "ADMIN" ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            supplier.id && handleDelete(supplier.id)
+                          }
+                        >
+                          Delete
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm" disabled>
+                          <Lock className="h-4 w-4" /> Delete
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { toast } from "sonner";
+import { handleAPIError } from "../lib/api-error";
 import type { StockItem, UsageRecord } from "../types";
 
 export default function UsagePage() {
@@ -102,8 +103,6 @@ export default function UsagePage() {
     }
 
     return true;
-
-    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,13 +131,7 @@ export default function UsagePage() {
       fetchUsages();
       fetchStockItems(); // Refresh stock items to show updated quantities
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(
-          `Failed to ${editingId ? "update" : "record"} usage: ${error.message}`
-        );
-      } else {
-        toast.error(`Failed to ${editingId ? "update" : "record"} usage`);
-      }
+      handleAPIError(error, `Failed to ${editingId ? "update" : "record"} usage`);
       console.error("Error handling usage:", error);
     }
   };
@@ -151,7 +144,7 @@ export default function UsagePage() {
         fetchUsages();
         fetchStockItems(); // Refresh stock items to show updated quantities
       } catch (error) {
-        toast.error("Failed to delete usage record");
+        handleAPIError(error, "Failed to delete usage record");
         console.error("Error deleting usage:", error);
       }
     }
