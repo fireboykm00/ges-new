@@ -6,7 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { Toaster } from "sonner";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -16,22 +16,32 @@ import Purchases from "./pages/Purchases";
 import Usage from "./pages/Usage";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
+import Users from "./pages/Users";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppRoutes() {
   const location = useLocation();
-  const isAuthRoute = location.pathname === "/login";
+  const { isAuthenticated } = useAuth();
+  const isAuthRoute = ["/login", "/register"].includes(location.pathname);
 
-  if (isAuthRoute) {
+  if (!isAuthenticated) {
     return (
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="*"
+          element={<Navigate to="/login" state={{ from: location }} />}
+        />
       </Routes>
     );
+  }
+
+  // If authenticated user tries to access login/register, redirect to dashboard
+  if (isAuthRoute) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
@@ -41,15 +51,13 @@ function AppRoutes() {
         <Navbar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+            {/* Default route redirects to dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+            {/* Protected routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Admin and Manager only routes */}
             <Route
               path="/stocks"
               element={
@@ -74,14 +82,10 @@ function AppRoutes() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/usage"
-              element={
-                <ProtectedRoute>
-                  <Usage />
-                </ProtectedRoute>
-              }
-            />
+
+            {/* General authenticated user routes */}
+            <Route path="/usage" element={<Usage />} />
+
             <Route
               path="/expenses"
               element={
@@ -90,14 +94,20 @@ function AppRoutes() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/reports" element={<Reports />} />
+
+            {/* Admin only routes */}
             <Route
-              path="/reports"
+              path="/users"
               element={
-                <ProtectedRoute>
-                  <Reports />
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <Users />
                 </ProtectedRoute>
               }
             />
+
+            {/* Catch all route - redirect to dashboard */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>
       </div>
@@ -107,11 +117,11 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <AppRoutes />
         <Toaster position="top-right" richColors />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }

@@ -54,7 +54,26 @@ export default function Purchases() {
   const fetchPurchases = async () => {
     try {
       const response = await purchaseAPI.getAll();
-      setPurchases(response.data);
+      const purchaseData = response.data;
+
+      // Validate and normalize the data
+      if (Array.isArray(purchaseData)) {
+        const normalizedPurchases = purchaseData.map((purchase) => ({
+          ...purchase,
+          items: Array.isArray(purchase.items)
+            ? purchase.items.map((item) => ({
+                id: item.id,
+                stockItemId: item.stockItemId,
+                quantity: item.quantity,
+                price: item.price,
+              }))
+            : [],
+        }));
+        setPurchases(normalizedPurchases);
+      } else {
+        console.error("Invalid purchase data format:", purchaseData);
+        toast.error("Received invalid data format from server");
+      }
     } catch (error) {
       toast.error("Failed to fetch purchases");
       console.error("Error fetching purchases:", error);
@@ -399,7 +418,7 @@ export default function Purchases() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {purchases.map((purchase) => (
+              {(purchases || []).map((purchase) => (
                 <TableRow key={purchase.id}>
                   <TableCell>{purchase.date}</TableCell>
                   <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>

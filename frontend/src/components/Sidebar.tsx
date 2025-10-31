@@ -8,6 +8,7 @@ import {
   Utensils,
   Wallet,
   BarChart2,
+  Users,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -45,6 +46,12 @@ export default function Sidebar() {
       roles: ["ADMIN", "MANAGER"],
     },
     { path: "/reports", label: "Reports", icon: BarChart2 },
+    {
+      path: "/users",
+      label: "Users",
+      icon: Users,
+      roles: ["ADMIN"],
+    },
   ];
 
   // Filter items based on user role

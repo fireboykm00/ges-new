@@ -31,6 +31,7 @@ export default function UsagePage() {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     stockItemId: 0,
     quantityUsed: 0,
@@ -113,11 +114,16 @@ export default function UsagePage() {
     }
 
     try {
-      const response = await usageAPI.create(formData);
-      console.log("Usage creation response:", response); // Debug log
-      toast.success("Usage recorded successfully");
+      if (editingId) {
+        await usageAPI.update(editingId, formData);
+        toast.success("Usage updated successfully");
+      } else {
+        await usageAPI.create(formData);
+        toast.success("Usage recorded successfully");
+      }
 
       setShowForm(false);
+      setEditingId(null);
       setFormData({
         stockItemId: 0,
         quantityUsed: 0,
@@ -127,11 +133,13 @@ export default function UsagePage() {
       fetchStockItems(); // Refresh stock items to show updated quantities
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(`Failed to record usage: ${error.message}`);
+        toast.error(
+          `Failed to ${editingId ? "update" : "record"} usage: ${error.message}`
+        );
       } else {
-        toast.error("Failed to record usage");
+        toast.error(`Failed to ${editingId ? "update" : "record"} usage`);
       }
-      console.error("Error recording usage:", error);
+      console.error("Error handling usage:", error);
     }
   };
 
@@ -149,8 +157,19 @@ export default function UsagePage() {
     }
   };
 
+  const handleEdit = (usage: UsageRecord) => {
+    setEditingId(usage.id || null);
+    setFormData({
+      stockItemId: usage.stockItemId,
+      quantityUsed: usage.quantityUsed,
+      date: usage.date,
+    });
+    setShowForm(true);
+  };
+
   const handleCancel = () => {
     setShowForm(false);
+    setEditingId(null);
     setFormData({
       stockItemId: 0,
       quantityUsed: 0,
@@ -179,7 +198,7 @@ export default function UsagePage() {
       {showForm ? (
         <Card>
           <CardHeader>
-            <CardTitle>Record Usage</CardTitle>
+            <CardTitle>{editingId ? "Edit Usage" : "Record Usage"}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -272,13 +291,22 @@ export default function UsagePage() {
                   <TableCell>{getStockItemName(usage.stockItemId)}</TableCell>
                   <TableCell>{usage.quantityUsed}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => usage.id && handleDelete(usage.id)}
-                    >
-                      Delete
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(usage)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => usage.id && handleDelete(usage.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

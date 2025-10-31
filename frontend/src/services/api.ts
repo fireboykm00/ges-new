@@ -117,6 +117,8 @@ export const usageAPI = {
   getAll: () => api.get<UsageRecord[]>("/usages"),
   getById: (id: number) => api.get<UsageRecord>(`/usages/${id}`),
   create: (data: UsageRecord) => api.post<UsageRecord>("/usages", data),
+  update: (id: number, data: UsageRecord) =>
+    api.put<UsageRecord>(`/usages/${id}`, data),
   delete: (id: number) => api.delete<void>(`/usages/${id}`),
 };
 
